@@ -2,7 +2,7 @@ import os, traceback, sys, parselmouth
 
 now_dir = os.getcwd()
 sys.path.append(now_dir)
-from lib.audio import load_audio
+from lib.audio import apply_breath_mask_to_f0, load_audio
 import pyworld
 import numpy as np, logging
 
@@ -108,7 +108,8 @@ class FeatureInput(object):
 
                 print("loading rmvpe model")
                 self.model_rmvpe = RMVPE("rmvpe.pt", is_half=False, device="cuda")
-            f0 = self.model_rmvpe.infer_from_audio(x, thred=0.02)  
+            f0 = self.model_rmvpe.infer_from_audio(x, thred=0.02)
+        f0 = apply_breath_mask_to_f0(f0, x, self.fs, self.hop)
         return f0
 
     def coarse_f0(self, f0):

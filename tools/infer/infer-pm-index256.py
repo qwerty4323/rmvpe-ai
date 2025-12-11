@@ -6,6 +6,7 @@ import torch, pdb, os, parselmouth
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import numpy as np
+from lib.audio import apply_breath_mask_to_f0
 import soundfile as sf
 
 # from models import SynthesizerTrn256#hifigan_nonsf
@@ -102,6 +103,7 @@ def get_f0(x, p_len, f0_up_key=0):
     pad_size = (p_len - len(f0) + 1) // 2
     if pad_size > 0 or p_len - len(f0) - pad_size > 0:
         f0 = np.pad(f0, [[pad_size, p_len - len(f0) - pad_size]], mode="constant")
+    f0 = apply_breath_mask_to_f0(f0, x, 16000, 160)
     f0 *= pow(2, f0_up_key / 12)
     f0bak = f0.copy()
 

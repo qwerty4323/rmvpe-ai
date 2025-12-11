@@ -9,6 +9,8 @@ from functools import lru_cache
 now_dir = os.getcwd()
 sys.path.append(now_dir)
 
+from lib.audio import apply_breath_mask_to_f0
+
 bh, ah = signal.butter(N=5, Wn=48, btype="high", fs=16000)
 
 input_audio_path2wav = {}
@@ -150,6 +152,7 @@ class VC(object):
             f0[self.x_pad * tf0 : self.x_pad * tf0 + len(replace_f0)] = replace_f0[
                 :shape
             ]
+        f0 = apply_breath_mask_to_f0(f0, x, self.sr, self.window)
         # with open("test_opt.txt","w")as f:f.write("\n".join([str(i)for i in f0.tolist()]))
         f0bak = f0.copy()
         f0_mel = 1127 * np.log(1 + f0 / 700)

@@ -14,6 +14,7 @@ import scipy.signal as signal
 now_dir = os.getcwd()
 sys.path.append(now_dir)
 from config import Config
+from lib.audio import apply_breath_mask_to_f0
 from multiprocessing import Manager as M
 
 mm = M()
@@ -129,6 +130,7 @@ class RVC:
                     f0, [[pad_size, p_len - len(f0) - pad_size]], mode="constant"
                 )
 
+            f0 = apply_breath_mask_to_f0(f0, x, self.sr, self.window)
             f0 *= pow(2, f0_up_key / 12)
             return self.get_f0_post(f0)
         if n_cpu == 1:
@@ -140,6 +142,7 @@ class RVC:
                 frame_period=10,
             )
             f0 = signal.medfilt(f0, 3)
+            f0 = apply_breath_mask_to_f0(f0, x, self.sr, self.window)
             f0 *= pow(2, f0_up_key / 12)
             return self.get_f0_post(f0)
         f0bak = np.zeros(x.shape[0] // 160, dtype=np.float64)
@@ -171,6 +174,7 @@ class RVC:
                 part_length * idx // 160 : part_length * idx // 160 + f0.shape[0]
             ] = f0
         f0bak = signal.medfilt(f0bak, 3)
+        f0bak = apply_breath_mask_to_f0(f0bak, x, self.sr, self.window)
         f0bak *= pow(2, f0_up_key / 12)
         return self.get_f0_post(f0bak)
 
@@ -191,6 +195,7 @@ class RVC:
         f0 = torchcrepe.filter.mean(f0, 3)
         f0[pd < 0.1] = 0
         f0 = f0[0].cpu().numpy()
+        f0 = apply_breath_mask_to_f0(f0, x, self.sr, self.window)
         f0 *= pow(2, f0_up_key / 12)
         return self.get_f0_post(f0)
 
@@ -204,6 +209,7 @@ class RVC:
             )
             # self.model_rmvpe = RMVPE("aug2_58000_half.pt", is_half=self.is_half, device=self.device)
         f0 = self.model_rmvpe.infer_from_audio(x, thred=0.03)
+        f0 = apply_breath_mask_to_f0(f0, x, self.sr, self.window)
         f0 *= pow(2, f0_up_key / 12)
         return self.get_f0_post(f0)
 

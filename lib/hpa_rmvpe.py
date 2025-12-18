@@ -509,7 +509,7 @@ class MelSpectrogram(nn.Module):
         return mel_output.clamp(min=self.clamp).log()
 
 class RMVPE:
-    def __init__(self, model_path, is_half, device=None, providers=None, onnx=False, hpa=False):
+    def __init__(self, model_path, is_half, device=None, providers=None, onnx=False, hpa=True):
         self.onnx = onnx
 
         if self.onnx:

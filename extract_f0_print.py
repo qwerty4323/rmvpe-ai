@@ -104,7 +104,7 @@ class FeatureInput(object):
             f0 = self.model_rmvpe.infer_from_audio(x, thred=0.03)
         elif f0_method == "rmvpe_remake_exp":
             if hasattr(self, "model_rmvpe") == False:
-                from lib.hpa_rmvpe import RMVPE
+                from lib.rmvpe import RMVPE
 
                 print("loading rmvpe model")
                 self.model_rmvpe = RMVPE("rmvpe.pt", is_half=False, device="cuda")

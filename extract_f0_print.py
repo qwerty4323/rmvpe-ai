@@ -114,7 +114,7 @@ class FeatureInput(object):
                 from lib.hpa_rmvpe import RMVPE
 
                 print("loading hpa-rmvpe model")
-                self.model_rmvpe = RMVPE("hpa_rmvpe.pt", is_half=False, device="cuda")
+                self.model_rmvpe = RMVPE("hpa_rmvpe.pt", is_half=False, device="cuda", hpa=True)
             f0 = self.model_rmvpe.infer_from_audio(x, thred=0.02)  
         return f0
 

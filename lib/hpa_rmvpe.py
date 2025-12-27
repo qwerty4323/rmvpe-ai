@@ -513,7 +513,7 @@ class HPA_RMVPE:
 
         model = E2E(4, 1, (2, 2), 5, 4, 1, 16, hpa=hpa)
 
-        model.load_state_dict(torch.load(model_path, map_location="cpu", weights_only=True))
+        model.load_state_dict(torch.load(model_path, map_location="cpu", weights_only=False))
         model.eval()
         self.model = model.to(device)
 

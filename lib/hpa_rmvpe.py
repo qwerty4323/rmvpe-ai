@@ -508,26 +508,16 @@ class MelSpectrogram(nn.Module):
         mel_output = self.mel_basis @ magnitude
         return mel_output.clamp(min=self.clamp).log()
 
-class RMVPE:
-    def __init__(self, model_path, is_half, device=None, providers=None, onnx=False, hpa=True):
-        self.onnx = onnx
+class HPA_RMVPE:
+    def __init__(self, model_path, device=None, hpa=False):
 
-        if self.onnx:
-            import onnxruntime as ort
+        model = E2E(4, 1, (2, 2), 5, 4, 1, 16, hpa=hpa)
 
-            sess_options = ort.SessionOptions()
-            sess_options.log_severity_level = 3
-            self.model = ort.InferenceSession(model_path, sess_options=sess_options, providers=providers)
-        else:
-            model = E2E(4, 1, (2, 2), 5, 4, 1, 16, hpa=hpa)
-
-            model.load_state_dict(torch.load(model_path, map_location="cpu", weights_only=False))
-            model.eval()
-            if is_half: model = model.half()
-            self.model = model.to(device)
+        model.load_state_dict(torch.load(model_path, map_location="cpu", weights_only=True))
+        model.eval()
+        self.model = model.to(device)
 
         self.device = device
-        self.is_half = is_half
         self.mel_extractor = MelSpectrogram(N_MELS, 16000, 1024, 160, None, 30, 8000).to(device)
         cents_mapping = 20 * np.arange(N_CLASS) + 1997.3794084376191
         self.cents_mapping = np.pad(cents_mapping, (4, 4))
@@ -544,13 +534,7 @@ class RMVPE:
                 mel_chunk = mel[..., start:min(start + chunk_size, pad_frames)]
                 assert mel_chunk.shape[-1] % 32 == 0
 
-                if self.onnx:
-                    mel_chunk = mel_chunk.cpu().numpy().astype(np.float32)
-                    out_chunk = torch.as_tensor(self.model.run([self.model.get_outputs()[0].name], {self.model.get_inputs()[0].name: mel_chunk})[0], device=self.device)
-                else: 
-                    if self.is_half: mel_chunk = mel_chunk.half()
-                    out_chunk = self.model(mel_chunk)
-
+                out_chunk = self.model(mel_chunk)
                 output_chunks.append(out_chunk)
 
             hidden = torch.cat(output_chunks, dim=1)

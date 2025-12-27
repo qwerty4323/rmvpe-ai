@@ -110,12 +110,12 @@ class FeatureInput(object):
                 self.model_rmvpe = RMVPE("rmvpe.pt", is_half=False, device="cuda")
             f0 = self.model_rmvpe.infer_from_audio(x, thred=0.02)
         elif f0_method == "hpa_rmvpe_exp":
-            if hasattr(self, "model_rmvpe") == False:
-                from lib.hpa_rmvpe import RMVPE
+            if hasattr(self, "model_hpa_rmvpe") == False:
+                from lib.hpa_rmvpe import HPA_RMVPE
 
                 print("loading hpa-rmvpe model")
-                self.model_rmvpe = RMVPE("hpa_rmvpe.pt", is_half=False, device="cuda")
-            f0 = self.model_rmvpe.infer_from_audio(x, thred=0.02)  
+                self.model_hpa_rmvpe = HPA_RMVPE("hpa_rmvpe.pt", is_half=False, device="cuda")
+            f0 = self.model_hpa_rmvpe.infer_from_audio(audio, 0.03) 
         return f0
 
     def coarse_f0(self, f0):
